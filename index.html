@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Private Chat</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2b2b4d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .chat-header {
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        #messages {
+            list-style: none;
+            padding: 15px;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 20px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease-in-out;
+            word-wrap: break-word;
+        }
+
+        .mine {
+            background: #6c63ff;
+            align-self: flex-end;
+            color: white;
+        }
+
+        .other {
+            background: rgba(255,255,255,0.1);
+            align-self: flex-start;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        form {
+            display: flex;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        button {
+            margin-left: 10px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 25px;
+            background: #6c63ff;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #574fd6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">Private Chat</div>
+    <ul id="messages"></ul>
+
+    <form id="form">
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <button>Send</button>
+    </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+
+    const username = prompt("Enter your name:");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        if (input.value) {
+            socket.emit("chat message", {
+                user: username,
+                text: input.value
+            });
+            input.value = "";
+        }
+    });
+
+    socket.on("chat message", function(data) {
+        const li = document.createElement("li");
+        li.classList.add("message");
+
+        if (data.user === username) {
+            li.classList.add("mine");
+        } else {
+            li.classList.add("other");
+        }
+
+        li.textContent = data.text;
+
+        messages.appendChild(li);
+        messages.scrollTop = messages.scrollHeight;
+    });
+</script>
+
+</body>
+</html>
